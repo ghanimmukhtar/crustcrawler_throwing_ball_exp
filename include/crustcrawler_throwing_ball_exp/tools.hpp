@@ -91,6 +91,13 @@ std::vector<double>& extract_certain_arm_joints_values(Data_config& parameters);
 std::vector<double>& get_arranged_joint_command(Data_config& parameters);
 
 /**
+ * @brief Extract from each joint command msgs the values arranged from joint_1 to joint_6 and return the vector
+ * @param Data_config class, and
+ * @return vector of arranged joint values and fill in the parameters the corresponding joint values
+**/
+std::vector<double>& get_arranged_individual_joint_command(Data_config& parameters);
+
+/**
  * @brief Read a text file that include joint waypoints and construct the joint trajectory_msgs
  * @param text file that includes joints waypoints
  * @param Data_config class

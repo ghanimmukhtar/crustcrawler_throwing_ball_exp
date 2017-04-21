@@ -54,8 +54,8 @@ bool execute_joint_trajectory(actionlib::SimpleActionClient<control_msgs::Follow
     ROS_INFO("*****************************************************************************************");
     if(!parameters.get_simulation()){
         while(!parameters.get_action_server_status().status_list.empty()){
-            //usleep(1e3);
-            if(largest_difference(get_arranged_joint_command(parameters),
+            usleep(1e3);
+            if(largest_difference(get_arranged_individual_joint_command(parameters),
                                   joint_trajectory.points[joint_trajectory.points.size() - 100].positions) < 0.1){
 
                 //if(joint_trajectory.points[(int)joint_trajectory.points.size() - 1].time_from_start.toSec()
@@ -66,9 +66,9 @@ bool execute_joint_trajectory(actionlib::SimpleActionClient<control_msgs::Follow
             }
             //ROS_ERROR_STREAM("the difference is: " << largest_difference(extract_certain_arm_joints_values(parameters),
               //                                                           joint_trajectory.points[joint_trajectory.points.size() - 100].positions));
-            for(size_t i = 0; i < extract_certain_arm_joints_values(parameters).size(); i++)
-                ROS_ERROR_STREAM("joint state for joint: " << i << " is: " << extract_certain_arm_joints_values(parameters)[i]);
-            ROS_INFO("*****************************************************************************************");
+            //for(size_t i = 0; i < extract_certain_arm_joints_values(parameters).size(); i++)
+              //  ROS_ERROR_STREAM("joint state for joint: " << i << " is: " << extract_certain_arm_joints_values(parameters)[i]);
+            //ROS_INFO("*****************************************************************************************");
         }
 
     }
@@ -103,7 +103,21 @@ std::vector<double>& get_arranged_joint_command(Data_config& parameters){
                                                                                    parameters.get_joint_command().names.end(),
                                                                                    parameters.get_crustcrawler_arm_joints_names()[i]))]);
     }
-    return joint_values;
+     parameters.set_crustcrawler_arm_joint_command(joint_values);
+    return parameters.get_crustcrawler_arm_joint_command();
+}
+
+std::vector<double>& get_arranged_individual_joint_command(Data_config& parameters){
+    std::vector<double> joint_values;
+    joint_values.push_back(parameters.get_joint_1_command());
+    joint_values.push_back(parameters.get_joint_2_command());
+    joint_values.push_back(parameters.get_joint_3_command());
+    joint_values.push_back(parameters.get_joint_4_command());
+    joint_values.push_back(parameters.get_joint_5_command());
+    joint_values.push_back(parameters.get_joint_6_command());
+
+    parameters.set_crustcrawler_arm_individual_joint_command(joint_values);
+    return parameters.get_crustcrawler_arm_individual_joint_command();
 }
 
 //this function record the feedback of the joint server when executing a trajectory

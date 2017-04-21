@@ -6,6 +6,7 @@
 
 #include <Eigen/Core>
 #include <vector>
+#include <std_msgs/Float64.h>
 #include <moveit/robot_state/conversions.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <control_msgs/FollowJointTrajectoryActionFeedback.h>
@@ -27,11 +28,11 @@ struct Parameters {
     std::vector<std::string> arm_joints_names = {"joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6"};
     sensor_msgs::JointState my_joint_state;
     crustcrawler_core_msgs::JointCommand crustcrawler_joint_command;
-    std::vector<double> arm_joints;
+    std::vector<double> arm_joints, arm_joints_command, arm_individual_joints_command;
     control_msgs::FollowJointTrajectoryActionFeedback joint_action_feedback;
     control_msgs::FollowJointTrajectoryActionResult action_result;
 
-    double dt, epsilon, rate, start_time, release_ball_dt, last_time;
+    double dt, epsilon, rate, start_time, release_ball_dt, last_time, joint_1_command, joint_2_command, joint_3_command, joint_4_command, joint_5_command, joint_6_command;
 
     robot_model::RobotModelPtr robot_model;
     bool first = false, start_record_feedback = false, record = false, velocity_option = false, acceleration_option = false, simulation = true, check_collision = true;
@@ -113,8 +114,40 @@ public:
         return params.last_time;
     }
 
+    double get_joint_1_command(){
+        return params.joint_1_command;
+    }
+
+    double get_joint_2_command(){
+        return params.joint_2_command;
+    }
+
+    double get_joint_3_command(){
+        return params.joint_3_command;
+    }
+
+    double get_joint_4_command(){
+        return params.joint_4_command;
+    }
+
+    double get_joint_5_command(){
+        return params.joint_5_command;
+    }
+
+    double get_joint_6_command(){
+        return params.joint_6_command;
+    }
+
     std::vector<double>& get_crustcrawler_arm_joint_values(){
         return params.arm_joints;
+    }
+
+    std::vector<double>& get_crustcrawler_arm_joint_command(){
+        return params.arm_joints_command;
+    }
+
+    std::vector<double>& get_crustcrawler_arm_individual_joint_command(){
+        return params.arm_individual_joints_command;
     }
 
     control_msgs::FollowJointTrajectoryActionFeedback& get_action_server_feedback(){
@@ -266,6 +299,14 @@ public:
             params.arm_joints = joint_values;
     }
 
+    void set_crustcrawler_arm_joint_command(std::vector<double>& joint_values){
+            params.arm_joints_command = joint_values;
+    }
+
+    void set_crustcrawler_arm_individual_joint_command(std::vector<double>& joint_values){
+            params.arm_individual_joints_command = joint_values;
+    }
+
     void set_dt(double& dt){
         params.dt = dt;
     }
@@ -380,6 +421,30 @@ public:
 
     void set_release_ball_dt(double dt){
         params.release_ball_dt = dt;
+    }
+
+    void set_joint_1_command(double command){
+        params.joint_1_command = command;
+    }
+
+    void set_joint_2_command(double command){
+        params.joint_2_command = command;
+    }
+
+    void set_joint_3_command(double command){
+        params.joint_3_command = command;
+    }
+
+    void set_joint_4_command(double command){
+        params.joint_4_command = command;
+    }
+
+    void set_joint_5_command(double command){
+        params.joint_5_command = command;
+    }
+
+    void set_joint_6_command(double command){
+        params.joint_6_command = command;
     }
 
     void set_last_time(double t){

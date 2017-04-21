@@ -33,6 +33,26 @@ void eef_callback(const crustcrawler_core_msgs::EndpointState::ConstPtr& eef_fee
     locate_eef_pose(eef_feedback->pose, parameters);
 }
 
+//joints commands callbacks
+void joint_1_cammand_callback(const std_msgs::Float64::ConstPtr& joint_command){
+    parameters.set_joint_1_command(joint_command->data);
+}
+void joint_2_cammand_callback(const std_msgs::Float64::ConstPtr& joint_command){
+    parameters.set_joint_2_command(joint_command->data);
+}
+void joint_3_cammand_callback(const std_msgs::Float64::ConstPtr& joint_command){
+    parameters.set_joint_3_command(joint_command->data);
+}
+void joint_4_cammand_callback(const std_msgs::Float64::ConstPtr& joint_command){
+    parameters.set_joint_4_command(joint_command->data);
+}
+void joint_5_cammand_callback(const std_msgs::Float64::ConstPtr& joint_command){
+    parameters.set_joint_5_command(joint_command->data);
+}
+void joint_6_cammand_callback(const std_msgs::Float64::ConstPtr& joint_command){
+    parameters.set_joint_6_command(joint_command->data);
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "throw_ball_naive");
@@ -47,6 +67,13 @@ int main(int argc, char **argv)
     ros::Subscriber result_sub = n.subscribe<control_msgs::FollowJointTrajectoryActionResult>("/crustcrawler/follow_joint_trajectory/result", 1, result_callback);
     ros::Subscriber status_sub = n.subscribe<actionlib_msgs::GoalStatusArray>("/crustcrawler/follow_joint_trajectory/status", 1, status_callback);
     ros::Publisher gripper_pub = n.advertise<crustcrawler_core_msgs::EndEffectorCommand>("/crustcrawler/end_effector/gripper/command", true);
+    //subscribe to the actual joints commands
+    ros::Subscriber joint_1_command = n.subscribe<std_msgs::Float64>("/crustcrawler/joint_1_position_controller/command", 1, joint_1_cammand_callback);
+    ros::Subscriber joint_2_command = n.subscribe<std_msgs::Float64>("/crustcrawler/joint_2_position_controller/command", 1, joint_2_cammand_callback);
+    ros::Subscriber joint_3_command = n.subscribe<std_msgs::Float64>("/crustcrawler/joint_3_position_controller/command", 1, joint_3_cammand_callback);
+    ros::Subscriber joint_4_command = n.subscribe<std_msgs::Float64>("/crustcrawler/joint_4_position_controller/command", 1, joint_4_cammand_callback);
+    ros::Subscriber joint_5_command = n.subscribe<std_msgs::Float64>("/crustcrawler/joint_5_position_controller/command", 1, joint_5_cammand_callback);
+    ros::Subscriber joint_6_command = n.subscribe<std_msgs::Float64>("/crustcrawler/joint_6_position_controller/command", 1, joint_6_cammand_callback);
 
     ros::AsyncSpinner my_spinner(1);
     my_spinner.start();

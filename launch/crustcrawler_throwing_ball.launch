@@ -28,7 +28,7 @@
   <param name="acceleration_option" value="false"/>
   <param name ="simulation" value="false"/>
   <param name ="check_collision" value="false"/>
-  <!--node name="baxter_throwing_ball_exp" pkg="baxter_throwing_ball_exp" type="throw_ball_naive" output="screen" args="joint_states:=/robot/joint_states" launch-prefix="gdb -ex run args"-->
+  <!--node name="crustcrawler_throwing_ball_exp" pkg="crustcrawler_throwing_ball_exp" type="throw_ball_naive" output="screen" args="joint_states:=/crustcrawler/joint_states" launch-prefix="gdb -ex run -args"-->
   <node name="crustcrawler_throwing_ball_exp" pkg="crustcrawler_throwing_ball_exp" type="throw_ball_naive" output="screen" args="joint_states:=/crustcrawler/joint_states" >
   </node>
 </launch>
