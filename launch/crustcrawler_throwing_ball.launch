@@ -1,0 +1,34 @@
+<launch>
+  <arg name="record" default="false" />
+  <arg name="gripper_id" default="1"/> 
+  <param name="robot_description"
+      command="$(find xacro)/xacro.py --inorder $(find crustcrawler_description)/urdf/crustcrawler_arm_test_2.xacro" unless="$(arg record)"/>
+
+  <param name="robot_description_semantic"
+      command="$(find xacro)/xacro.py --inorder $(find crustcrawler_moveit_config)/config/crustcrawler.srdf" unless="$(arg record)"/>
+
+
+  <param name="input_file_path" value="/home/ghanim/.ros/"/>
+  <param name="feedback_file_path" value="/home/ghanim/git/catkin_ws/src/crustcrawler_throwing_ball_exp/Trajectory_Data/feedback.csv"/>
+
+  <!--param name="input_file_path" value="/home/mukhtar/git/catkin_ws/src/crustcrawler_throwing_ball_exp/Trajectory_Data/"/>
+  <param name="feedback_file_path" value="/home/mukhtar/git/catkin_ws/src/crustcrawler_throwing_ball_exp/Trajectory_Data/feedback.txt"/-->
+
+  <param name="grap_simulation" value="false"/>
+  <param name="dt" value="0.006"/>
+  <param name="rate" value="100"/>
+  <param name="release_ball_dt" value="1.0"/>
+  <param name="start_trajectory_number" value="2"/>
+  <param name="last_trajectory_number" value="2"/>
+  <param name="epsilon" value="0.01"/>
+  <param name="record" value="$(arg record)"/>
+  <param name="gripper_id" value="$(arg gripper_id)"/>
+  <param name="execute" value="true"/>
+  <param name="velocity_option" value="false"/>
+  <param name="acceleration_option" value="false"/>
+  <param name ="simulation" value="false"/>
+  <param name ="check_collision" value="false"/>
+  <!--node name="baxter_throwing_ball_exp" pkg="baxter_throwing_ball_exp" type="throw_ball_naive" output="screen" args="joint_states:=/robot/joint_states" launch-prefix="gdb -ex run args"-->
+  <node name="crustcrawler_throwing_ball_exp" pkg="crustcrawler_throwing_ball_exp" type="throw_ball_naive" output="screen" args="joint_states:=/crustcrawler/joint_states" >
+  </node>
+</launch>
