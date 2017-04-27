@@ -32,7 +32,9 @@ struct Parameters {
     control_msgs::FollowJointTrajectoryActionFeedback joint_action_feedback;
     control_msgs::FollowJointTrajectoryActionResult action_result;
 
-    double dt, epsilon, rate, start_time, release_ball_dt, last_time, joint_1_command, joint_2_command, joint_3_command, joint_4_command, joint_5_command, joint_6_command;
+    double dt, epsilon, rate, start_time, release_ball_dt, last_time,
+    joint_1_command, joint_2_command, joint_3_command, joint_4_command,
+    joint_5_command, joint_6_command, release_time;
 
     robot_model::RobotModelPtr robot_model;
     bool first = false, start_record_feedback = false, record = false, velocity_option = false, acceleration_option = false, simulation = true, check_collision = true;
@@ -138,24 +140,8 @@ public:
         return params.joint_6_command;
     }
 
-    std::vector<double>& get_crustcrawler_arm_joint_values(){
-        return params.arm_joints;
-    }
-
-    std::vector<double>& get_crustcrawler_arm_joint_command(){
-        return params.arm_joints_command;
-    }
-
-    std::vector<double>& get_crustcrawler_arm_individual_joint_command(){
-        return params.arm_individual_joints_command;
-    }
-
-    control_msgs::FollowJointTrajectoryActionFeedback& get_action_server_feedback(){
-        return params.joint_action_feedback;
-    }
-
-    control_msgs::FollowJointTrajectoryActionResult& get_joint_action_result(){
-        return params.action_result;
+    double& get_release_time(){
+        return params.release_time;
     }
 
     double& get_dt(){
@@ -176,6 +162,26 @@ public:
 
     double& get_release_ball_dt(){
         return params.release_ball_dt;
+    }
+
+    std::vector<double>& get_crustcrawler_arm_joint_values(){
+        return params.arm_joints;
+    }
+
+    std::vector<double>& get_crustcrawler_arm_joint_command(){
+        return params.arm_joints_command;
+    }
+
+    std::vector<double>& get_crustcrawler_arm_individual_joint_command(){
+        return params.arm_individual_joints_command;
+    }
+
+    control_msgs::FollowJointTrajectoryActionFeedback& get_action_server_feedback(){
+        return params.joint_action_feedback;
+    }
+
+    control_msgs::FollowJointTrajectoryActionResult& get_joint_action_result(){
+        return params.action_result;
     }
 
     robot_model::RobotModelPtr& get_crustcrawler_robot_model(){
@@ -361,6 +367,10 @@ public:
 
     void set_epsilon(double& epsilon){
         params.epsilon = epsilon;
+    }
+
+    void set_rlease_time(double& release_time){
+        params.release_time = release_time;
     }
 
     void set_point_count(int count){

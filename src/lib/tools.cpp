@@ -10,21 +10,23 @@ typedef vector <record_t> data_t;
 bool execute_joint_trajectory(actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>& ac,
                               trajectory_msgs::JointTrajectory& joint_trajectory,
                               Data_config &parameters, ros::Publisher &gripper_pub){
-    crustcrawler_core_msgs::EndEffectorCommand gripper_command;
-    gripper_command.id = 1;
+    //crustcrawler_core_msgs::EndEffectorCommand gripper_command;
+    //gripper_command.id = 1;
     //if on the real robot calibrate the gripper and grasp the object
     if(!parameters.get_simulation()){
-        //open gripper command "release"
-        gripper_command.args = "{position: 100.0}";
+        /*gripper_command.args = "{position: 100.0}";
         gripper_command.command = "go";
-        gripper_pub.publish(gripper_command);
+        gripper_pub.publish(gripper_command);*/
+        open_gripper(parameters, gripper_pub);
 
         std::cin.ignore();
 
-        //close gripper command "grip"
+        /*
         gripper_command.args = "{position: 0.0}";
         gripper_command.command = "go";
-        gripper_pub.publish(gripper_command);
+        gripper_pub.publish(gripper_command);*/
+
+        close_gripper(parameters, gripper_pub);
 
         std::cin.ignore();
     }
@@ -47,31 +49,38 @@ bool execute_joint_trajectory(actionlib::SimpleActionClient<control_msgs::Follow
     if(!parameters.get_record())
         parameters.set_record(true);
 
+    double trajectory_duration = joint_trajectory.points[(int)joint_trajectory.points.size() - 1].time_from_start.toSec();
+    double release_time = trajectory_duration - parameters.get_release_time();
+    int release_index;
+    for(size_t i = 0; i < joint_trajectory.points.size(); i++)
+        if(joint_trajectory.points[i].time_from_start.toSec() > release_time){
+            release_index = i;
+            break;
+        }
     ROS_WARN_STREAM("trajectory last point time is: " <<
-                    joint_trajectory.points[(int)joint_trajectory.points.size() - 1].time_from_start.toSec());
-    for(size_t i = 0; i < joint_trajectory.points[joint_trajectory.points.size() - 100].positions.size(); i++)
-        ROS_ERROR_STREAM("joint: " << i << " has angle: " << joint_trajectory.points[joint_trajectory.points.size() - 100].positions[i]);
-    ROS_INFO("*****************************************************************************************");
+                    trajectory_duration);
+    for(size_t i = 0; i < joint_trajectory.points[release_index].positions.size(); i++)
+        ROS_ERROR_STREAM("joint: " << i << " has angle: " << joint_trajectory.points[release_index].positions[i]);
+    ROS_INFO_STREAM("*********************** release index is: *************************" << release_index);
     if(!parameters.get_simulation()){
-        while(!parameters.get_action_server_status().status_list.empty()){
+        while(!ac.getState().isDone()){
             usleep(1e3);
-            if(largest_difference(get_arranged_individual_joint_command(parameters),
-                                  joint_trajectory.points[joint_trajectory.points.size() - 100].positions) < 0.1){
-
-                //if(joint_trajectory.points[(int)joint_trajectory.points.size() - 1].time_from_start.toSec()
-                //      - parameters.get_action_server_feedback().feedback.actual.time_from_start.toSec() < parameters.get_release_ball_dt()){
-                gripper_command.args = "{position: 100.0}";
+            double difference = largest_difference(get_arranged_individual_joint_command(parameters),
+                                                   joint_trajectory.points[release_index].positions);
+            if(difference < 0.01){
+                /*gripper_command.args = "{position: 100.0}";
                 gripper_command.command = "go";
-                gripper_pub.publish(gripper_command);
+                gripper_pub.publish(gripper_command);*/
+                open_gripper(parameters, gripper_pub);
             }
-            //ROS_ERROR_STREAM("the difference is: " << largest_difference(extract_certain_arm_joints_values(parameters),
-              //                                                           joint_trajectory.points[joint_trajectory.points.size() - 100].positions));
+            //ROS_ERROR_STREAM("the difference is: " << difference << " and release index is: " << release_index);
             //for(size_t i = 0; i < extract_certain_arm_joints_values(parameters).size(); i++)
               //  ROS_ERROR_STREAM("joint state for joint: " << i << " is: " << extract_certain_arm_joints_values(parameters)[i]);
             //ROS_INFO("*****************************************************************************************");
         }
 
     }
+
     else if(parameters.get_grap_ball_simulation())
     {
 
@@ -85,6 +94,9 @@ bool execute_joint_trajectory(actionlib::SimpleActionClient<control_msgs::Follow
             }
         }
     }
+    /*std::vector<double> _test_joint_state = extract_arm_joints_values(parameters);
+    for(size_t i = 0; i < _test_joint_state.size(); i++)
+        ROS_ERROR_STREAM("value of joint: " << i << " is: " << _test_joint_state[i]);*/
     if (ac.waitForResult(goal.trajectory.points[goal.trajectory.points.size()-1].time_from_start /*+ ros::Duration(10)*/))
     {
         ROS_INFO_STREAM("Action server reported successful execution: " << parameters.get_joint_action_result().result.error_code);
@@ -337,6 +349,34 @@ trajectory_msgs::JointTrajectoryPoint get_grapping_point(Data_config& parameters
     return pt;
 }
 
+void construct_safe_initial_point_trajectory(Data_config& parameters,
+                                             trajectory_msgs::JointTrajectory& my_joint_trajectory,
+                                             trajectory_msgs::JointTrajectoryPoint second_pt){
+    std::vector<double> joint_distance(second_pt.positions.size()),
+            joint_values(second_pt.positions.size()),
+            joint_starting_values = extract_arm_joints_values(parameters);
+
+    double rt, duration = 3.02, dt = 0.02, start_time = 0.0, time = 0.0;
+
+    for(size_t i = 0; i < joint_distance.size(); i++)
+        joint_distance[i] = second_pt.positions[i] - joint_starting_values[i];
+
+    while(time < duration){
+        trajectory_msgs::JointTrajectoryPoint pt;
+        rt = 10 * pow((time/duration),3) - 15 * pow((time/duration),4) + 6 * pow((time/duration),5);
+        for(size_t i = 0; i < joint_values.size(); i++)
+            joint_values[i] = joint_starting_values[i] + rt * joint_distance[i];
+        pt.positions = joint_values;
+        pt.velocities.resize(second_pt.positions.size(), 0.0);
+        pt.accelerations.resize(second_pt.positions.size(), 0.0);
+        pt.effort.resize(second_pt.positions.size(), 0.0);
+        pt.time_from_start = ros::Duration(time);
+        my_joint_trajectory.points.push_back(pt);
+
+        time+=dt;
+    }
+}
+
 void construct_two_points_trajectory(Data_config& parameters,
                                      trajectory_msgs::JointTrajectory& my_joint_trajectory,
                                      trajectory_msgs::JointTrajectoryPoint second_pt){
@@ -413,7 +453,7 @@ bool go_to_initial_position(Data_config& parameters,
 
     if(!parameters.get_joint_trajectory().points.empty()){
         my_joint_trajectory.points.clear();
-        construct_two_points_trajectory(parameters, my_joint_trajectory, parameters.get_joint_trajectory().points[0]);
+        construct_safe_initial_point_trajectory(parameters, my_joint_trajectory, parameters.get_joint_trajectory().points[0]);
     }
     move_with_action_server(ac, my_joint_trajectory);
     //ROS_WARN_STREAM("trying to move to initial position, the action server gave: "
@@ -623,9 +663,9 @@ void construct_joint_trajectory_from_vector(trajectory_msgs::JointTrajectory& my
                     pt.accelerations.resize(6, 0.0);
                 }
                 pt.effort.resize(6, 0.0);
-                //pt.time_from_start = ros::Duration(raw_joint_traj[i][0]);
+                pt.time_from_start = ros::Duration(raw_joint_traj[i][0]);
 
-                pt.time_from_start = ros::Duration(i*0.01);
+                //pt.time_from_start = ros::Duration(i*0.01);
                 my_joint_trajectory.points.push_back(pt);
             }
         }

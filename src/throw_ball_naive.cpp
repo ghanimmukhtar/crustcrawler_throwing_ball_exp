@@ -97,6 +97,7 @@ int main(int argc, char **argv)
     n.getParam("start_trajectory_number", parameters.get_start_trajectory_number());
     n.getParam("last_trajectory_number", parameters.get_last_trajectory_number());
     n.getParam("gripper_id", parameters.get_gripper_id());
+    n.getParam("release_time", parameters.get_release_time());
 
     if(parameters.get_grap_ball_simulation()){
         ros::ServiceClient spawner = n.serviceClient<gazebo_msgs::SpawnModel> ("/gazebo/spawn_sdf_model");
@@ -153,6 +154,9 @@ int main(int argc, char **argv)
                     ROS_WARN_STREAM("trying to move to initial position, the action server gave: "
                              << parameters.get_joint_action_result().result.error_code);
                 execute_joint_trajectory(ac, parameters.get_joint_trajectory(), parameters, gripper_pub);
+                while(!go_to_initial_position(parameters, ac, gripper_pub))
+                    ROS_WARN_STREAM("trying to move to initial position, the action server gave: "
+                                                                                           << parameters.get_joint_action_result().result.error_code);
             }
 
             input_file.close();

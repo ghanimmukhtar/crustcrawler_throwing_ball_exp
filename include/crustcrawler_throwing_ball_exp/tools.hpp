@@ -134,18 +134,91 @@ void construct_joint_trajectory_from_vector(trajectory_msgs::JointTrajectory& my
 **/
 void construct_joint_trajectory_from_file(std::ifstream &text_file, Data_config& parameters);
 
-//to add comments later
+/**
+ * @brief Use the passed action server to execute the passed joint trajectory_msgs
+ * @param Joint action server
+ * @param Joint trajectory_msgs
+ * @return Boolean that shows if the action server was able to execute the trajectory successfully or not
+**/
 bool move_with_action_server(actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>& ac,
                              trajectory_msgs::JointTrajectory& my_joint_trajectory);
+
+/**
+ * @brief Return a predefined joint target that is sought to be safe enough for next motions
+ * @param Nothing
+ * @return Joint trajectory_msgs that contains one point
+**/
 trajectory_msgs::JointTrajectoryPoint get_neutral_point();
+
+/**
+ * @brief In simulation (i.e. Gazebo) it returns the position of the ball to be picked
+ * @param Data_config class
+ * @return geometry_msgs::Pose type that contains the ball position relative to the base (or world) frame
+**/
 geometry_msgs::Pose get_ball_pose(Data_config& parameters);
+
+/**
+ * @brief Get the pose of the link defined as the end effector of the robot_model
+ * @param geometry_msgs::Pose that includes the end effector pose from a the topic /crustcrawler/endpoint_state
+ * @param Data_config class
+ * @return Nothing but fill in the parameters the end effector pose
+**/
 void locate_eef_pose(geometry_msgs::Pose eef_feedback, Data_config& parameters);
+
+/**
+ * @brief Along with get_ball_pose() function it returns the solution for the picking point as joint trajectory_msgs
+ * @param Data_config class
+ * @return Joint trajectory_msgs that contains one point (i.e. picking joint configurations
+**/
 trajectory_msgs::JointTrajectoryPoint get_grapping_point(Data_config& parameters);
+
+/**
+ * @brief Construction a joint trajectory_msgs that contains two points, starting point is
+ *  the current joint states and the target is second_pt
+ * @param Data_config class
+ * @param Joint trajectory_msgs that will hold the resulting trajectory_msgs
+ * @param trajectory_msgs::JointTrajectoryPoint which is the target second point to be reached
+ * @return Nothing but fill in the trajectory_msgs::JointTrajectory correspondily
+**/
 void construct_two_points_trajectory(Data_config& parameters,
                                      trajectory_msgs::JointTrajectory& my_joint_trajectory,
                                      trajectory_msgs::JointTrajectoryPoint second_pt);
+
+/**
+ * @brief Construction a joint trajectory_msgs that contains multiple points, starting point is
+ * the current joint states and the target is second_pt. It uses polynomial interpolation to
+ * smooth the trajectory between the two points
+ * @param Data_config class
+ * @param Joint trajectory_msgs that will hold the resulting trajectory_msgs
+ * @param trajectory_msgs::JointTrajectoryPoint which is the target second point to be reached
+ * @return Nothing but fill in the trajectory_msgs::JointTrajectory correspondily
+**/
+void construct_safe_initial_point_trajectory(Data_config& parameters,
+                                             trajectory_msgs::JointTrajectory& my_joint_trajectory,
+                                             trajectory_msgs::JointTrajectoryPoint second_pt);
+
+/**
+ * @brief Open the gripper of the robot_model
+ * @param Data_config class
+ * @param A publisher that publish to the right topic (/crustcrawler/end_effector/gripper/command)
+ * @return Nothing just open the gripper
+**/
 void open_gripper(Data_config& parameters, ros::Publisher& gripper_pub);
+
+/**
+ * @brief Close the gripper of the robot_model
+ * @param Data_config class
+ * @param A publisher that publish to the right topic (/crustcrawler/end_effector/gripper/command)
+ * @return Nothing just close the gripper
+**/
 void close_gripper(Data_config& parameters, ros::Publisher& gripper_pub);
+
+/**
+ * @brief Delete the name model from the simulated environment
+ * @param Model name
+ * @param Data_config class
+ * @return Boolean
+**/
 bool delete_model(std::string model_name,
                    Data_config& parameters);
 
