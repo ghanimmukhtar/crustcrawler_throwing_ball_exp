@@ -23,8 +23,8 @@
   <param name="dt" value="0.006"/>
   <param name="rate" value="100"/>
   <param name="release_ball_dt" value="1.0"/>
-  <param name="start_trajectory_number" value="26"/>
-  <param name="last_trajectory_number" value="26"/>
+  <param name="start_trajectory_number" value="4"/>
+  <param name="last_trajectory_number" value="28"/>
   <param name="epsilon" value="0.06"/>
   <param name="record" value="$(arg record)"/>
   <param name="gripper_id" value="$(arg gripper_id)"/>
